@@ -10,6 +10,8 @@ const registerUser = asyncHandler( async (req,res) =>
     const {fullName , email , username, password} = req.body
     console.log('email: ',email);
 
+    // This is to check all the entries are provided
+
     if(
         [fullName,email,username,password].some((field)=>
         field?.trim() === '')
@@ -17,8 +19,9 @@ const registerUser = asyncHandler( async (req,res) =>
         throw new ApiError(400,'all fileds are required')
     }
 
+    // To find whether the user is already existed with same credentials
 
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         $or: [{username},{email}]
     })
 
@@ -30,11 +33,15 @@ const registerUser = asyncHandler( async (req,res) =>
     const avatarLocalPath = req.files?.avatar[0]?.path
     const coverImageLocalPath = req.files?.coverImage[0]?.path
 
+    console.log('avatar file path: ',avatarLocalPath);
+
     if(!avatarLocalPath){
         throw new ApiError(400,'avatar is required')
     }
     const avatar = await uploadOnCloudinary(avatarLocalPath)
     const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+
+    
 
     if (!avatar) {
         throw new ApiError(400,'avatar is required')
