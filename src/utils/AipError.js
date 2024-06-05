@@ -1,4 +1,7 @@
 // Define a class named ApiError that extends the built-in Error class
+
+// one of the reason for making this response utitlity is to avoid the fake 200 response
+
 class ApiError extends Error {
     // Constructor function that initializes instances of ApiError
     constructor(statusCode, message = "Something went wrong", errors = [], stack = "") {
