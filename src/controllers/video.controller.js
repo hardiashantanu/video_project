@@ -64,19 +64,88 @@ const publishAVideo = asyncHandler(async (req, res) => {
 })
 
 const getVideoById = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
     //TODO: get video by id
+    // get video id from url(params)
+    // check is the video exists with the given video id
+    // response the video
+    const { videoId } = req.params
+
+    const video = await Video.findById(videoId)
+
+    if (!video) {
+        throw new ApiError(400,"wrong video_id")        
+    }
+
+    res
+    .status(200)
+    .json(new ApiResponse(200,video,"video fetched successfully"))
 })
 
 const updateVideo = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
     //TODO: update video details like title, description, thumbnail
+    // get all fields
+    // check if the video exists or not
+    // use findByIdAndUpdate
+    // validate the response
+    // response the document
+    const { videoId } = req.params
+    const {title , description} = req.body
+    
+    const thumbnailLocalPath = req.files.thumbnail[0].path
+
+
+    const oldVideo = await Video.findById(videoId)
+
+    if (!oldVideo) {
+        throw new ApiError(400,"video not exist")
+    }
+    let newThumbnail
+
+    if(thumbnailLocalPath)
+    {
+        newThumbnail = await uploadOnCloudinary(thumbnailLocalPath)
+    }
+    
+    const video = await Video.findByIdAndUpdate({_id:videoId},{
+        title: title,
+        description: description,
+        thumbnail: newThumbnail.url
+    },{new: true})
+
+    if (!video) {
+        throw new ApiError(500,"somthing went wrong")
+    }
+
+    res
+    .status(200)
+    .json(new ApiResponse(200,video,"video updated successfully"))
+
 
 })
 
 const deleteVideo = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
     //TODO: delete video
+    // take the video id 
+    // check if the video exists or not
+    // use deleteOne to delete the video
+    // response the result
+    const { videoId } = req.params
+
+    const oldVideo = await Video.findById({_id: videoId})
+
+    if (!oldVideo) {
+        throw new ApiError(400,"video not exist")
+    }
+
+    const result = await Video.deleteOne({_id: videoId})
+
+    if (!result) {
+        throw new ApiError(500,"somthing went wrong")
+    }
+
+    res
+    .status(200)
+    .json(new ApiResponse(200,result,"video deleted!"))
 })
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
