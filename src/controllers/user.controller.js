@@ -147,7 +147,7 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const logOutUser = asyncHandler(async (req, res) => {
-  console.log(req.user._id);
+  console.log('user details\n',req.user);
 
   // forgoted to add the await in db operation ,got a bug here
   await User.findByIdAndUpdate(
