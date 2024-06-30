@@ -1,7 +1,7 @@
 import mongoose, {isValidObjectId} from "mongoose"
 import {Video} from "../models/video.model.js"
 import {User} from "../models/user.model.js"
-import {ApiError} from "../utils/ApiError.js"
+import {ApiError} from "../utils/AipError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
@@ -13,8 +13,54 @@ const getAllVideos = asyncHandler(async (req, res) => {
 })
 
 const publishAVideo = asyncHandler(async (req, res) => {
-    const { title, description} = req.body
     // TODO: get video, upload to cloudinary, create video
+
+    /*
+        get all the fields 
+        check for the title and description if they are present or not 
+        get video and thumbnail local path
+        check for the video if it is uploaded or not
+        upload on cloudinary -> take the response as the url string (!!! USE AWAIT !!!)
+        create the video
+        check for the success of video creation
+        response the video        
+    */
+    const { title, description, duration} = req.body
+
+    if ([title,description,duration].some((field) => field?.trim() === ""))
+    {
+       throw new ApiError(400, "all fileds are required");
+    }
+    
+    const videoLocalPath = req.files.videoFile[0].path
+    const thumbnailLocalPath = req.files.thumbnail[0].path
+
+    if (!videoLocalPath) {
+        throw new ApiError(400,"video file is required")
+    }
+
+    const video = await uploadOnCloudinary(videoLocalPath)
+    const thumbnail = await uploadOnCloudinary(thumbnailLocalPath)
+    const user = req.user
+
+    console.log(video,thumbnail);
+
+    const newVideo = await Video.create({
+        title,
+        description,
+        duration,
+        videoFile: video.url,
+        thumbnail: thumbnail.url,
+        owner: user
+    })
+
+    if (!newVideo) {
+        throw new ApiError(500,"something went wrong")
+    }
+
+    res
+    .status(200)
+    .json(new ApiResponse(200,newVideo,"video created successfully"))
 })
 
 const getVideoById = asyncHandler(async (req, res) => {

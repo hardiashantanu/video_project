@@ -43,7 +43,7 @@ const registerUser = asyncHandler(async (req, res) => {
   const avatarLocalPath = req.files?.avatar[0]?.path;
   // const coverImageLocalPath = req.files?.coverImage[0]?.path
 
-  // the below if block is to register the user (or to continue the process) when thee coverimage is not uploaded by the user in the registration process
+  // the below "if" block is to register the user (or to continue the process) when thee coverimage is not uploaded by the user in the registration process
 
   let coverImageLocalPath;
 
