@@ -3,6 +3,7 @@ import { Playlist } from "../models/playlist.model.js";
 import { ApiError } from "../utils/AipError.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { User } from "../models/user.model.js";
 
 const createPlaylist = asyncHandler(async (req, res) => {
   // get user details from frontend
@@ -52,15 +53,21 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
   // res the result
   const { userId } = req.params;
 
+  const existedUser = await User.findById(userId);
+
+  if (!existedUser) {
+    throw new ApiError(400, "user dosenot exists");
+  }
+
   const playlist = await Playlist.aggregate([
     {
-      $match: { owner: (userId) },// the functionality here is not working 
+      $match: { owner: new mongoose.Types.ObjectId(userId) },// "new" is used for syntax aid 
     },
   ]);
 
-  console.log(playlist.length);
+  console.log(playlist);
 
-  if (!playlist.length) {
+  if (!playlist) {
     throw new ApiError(400, "invalid user id");
   }
 
